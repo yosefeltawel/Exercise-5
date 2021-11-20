@@ -1,0 +1,41 @@
+@page "/"
+@page "/Home"
+@using PizzaStore.Blazor.Models
+@using PizzaStore.Blazor.Repository
+@inject IHttpClientFactory _clientFactory
+
+<div class="container pizza-container p-4">
+    <div class="row">
+        <h1 class="display-4 col-l2 text-center">Welcome to Cheems's pizza</h1>
+        @{
+            foreach (var pizza in PizzaList)
+            {
+                <div class="col-3">
+                    <div class="pizza">
+                        <img src="Images/Pizzas/Cheddar Cheese.jpg" title="Cheddar Cheese" alt="Cheddar Cheese Pizza">
+                        <div class="p-2">
+                            <h2>@pizza.Name</h2>
+                            <div class="pizza-description">
+                                <p>@pizza.Ingredients</p>
+                            </div>
+                            <a href="/PizzaDetails/@pizza.Id" class="btn btn-success">Add</a>
+                            @* <button @onclick="" >add</button>  *@
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code
+{
+    public List<Pizza> PizzaList { get; set; } = new List<Pizza>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var repo = new PizzaStoreRepository();
+        PizzaList = await repo.GetPizzaFromApi();
+    // this.StateHasChanged();
+    }
+}

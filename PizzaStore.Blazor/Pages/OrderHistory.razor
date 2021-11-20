@@ -1,0 +1,60 @@
+﻿@page "/OrderHistory"
+@using PizzaStore.Blazor.Models
+@using PizzaStore.Blazor.Repository
+
+<div class="OrderHistory-body p-4">
+    <div class="order-container">
+        <div class="row">
+
+            <h2 class="display-4 col-l2 text-center">Previous orders</h2>
+            @{
+                foreach (var order in OrderList)
+                {
+                    var orderDetails = order.OrderPizzas;
+                    foreach (var pizza in orderDetails)
+                    {
+                        <div class="Orders col-12 my-2 py-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="pizza-name">
+                                    @pizza.Pizza.Name
+                                </span>
+                                <span class="pizza-price">
+                                    @pizza.Pizza.Price
+                                </span>
+                            </div>
+                            <img class="cart-img" src="Images/Pizzas/Cheddar Cheese.jpg" alt="Pizza">
+
+                            <div class="cart-topping">
+                                @foreach (var topping in pizza.PizzaWithToppings)
+                                {
+                                    <div class="d-flex justify-content-between">
+                                        <span class="topping-name">
+                                            @topping.Topping.Name
+                                        </span>
+                                        <span class="topping-price">
+                                            @topping.Topping.Price
+                                        </span>
+                                    </div>
+                                    <img class="cart-img" src="Images/Toppings/Sauce.jpg" alt="Pizza Sauce">
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            }
+        </div>
+    </div >
+</div >
+
+@code
+{
+
+    public List<OrderResponse> OrderList { get; set; } = new List<OrderResponse>();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var repo = new PizzaStoreRepository();
+        OrderList = await repo.GetOrdersFromApi();
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,87 @@
+﻿@page "/ShoppingCart"
+@using PizzaStore.Blazor.Models
+@using PizzaStore.Blazor.Repository
+@inject ProtectedSessionStorage ProtectedSessionStorage
+
+<body class="shoppingCart-body p-4">
+<div class="order-container">
+    <div class="row">
+
+        <h2 class="display-4 col-l2 text-center">Your Cart</h2>
+        @{
+            foreach (var pizza in CartPizzas)
+            {
+                <div class="cart-pizza col-12 my-2 py-2">
+                    <div class="d-flex justify-content-between">
+                        @{
+                            var pizzaDetails = Pizzas.Where(p => p.Id == pizza.Id).FirstOrDefault();
+                        }
+                        <span class="pizza-name">
+                            @pizzaDetails.Name
+                        </span>
+                        <span class="pizza-price">
+                            @pizzaDetails.Price
+                        </span>
+                    </div>
+
+                    <img class="cart-img" src="Images/Pizzas/Cheddar Cheese.jpg" alt="Pizza">
+                    <div class="cart-topping">
+                        @foreach (var topping in pizza.ToppingList)
+                        {
+                            var toppingDetails = Toppings.Where(t => t.Id == topping).FirstOrDefault();
+
+                            <div class="d-flex justify-content-between">
+                                <span class="topping-name">
+                                    @toppingDetails.Name
+                                </span>
+                                <span class="topping-price">
+                                    @toppingDetails.Price
+                                </span>
+                            </div>
+                            <img class="cart-img" src="Images/Toppings/Sauce.jpg" alt="Pizza Sauce">
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+    <form method="post" class="text-center">
+        <button @onclick="OnPost" class="btn btn-success" type="submit">Confirm Order</button>
+    </form>
+</div>
+</body>
+
+@code
+{
+    public List<PizzaWithTopping> CartPizzas { get; set; } = new List<PizzaWithTopping>();
+    public List<Pizza> Pizzas { get; set; } = new List<Pizza>();
+    public List<Topping> Toppings { get; set; } = new List<Topping>();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var repo = new PizzaStoreRepository();
+        Pizzas = await repo.GetPizzaFromApi();
+        Toppings = await repo.GetToppingFromApi();
+
+        var result = await ProtectedSessionStorage.GetAsync<List<PizzaWithTopping>>("CartPizzas");
+        var order = result.Value;
+
+        if (order == null)
+        {
+            order = new List<PizzaWithTopping>();
+        }
+
+        CartPizzas = order;
+        StateHasChanged();
+    }
+
+    public async Task OnPost()
+    {
+        var repo = new PizzaStoreRepository();
+        var order = new Order();
+
+        order.Pizzas = CartPizzas;
+
+        await repo.PostOrderToApi(order);
+    }
+}
